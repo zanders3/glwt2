@@ -1,14 +1,13 @@
 //
 //  GLWT v2.0
 //  by Alex Parker
-//  A two file OpenGL 3.2+ Window Opener and Library Loader for OSX
+//  A two file OpenGL 3.2+ Window Opener and Library Loader for OSX/Win32
 //  Public Domain License
 //
 
 #include "glwt.h"
 
 #ifdef __APPLE__
-
 #import <Foundation/Foundation.h>
 #import <Cocoa/Cocoa.h>
 #include <mach/mach_time.h>
@@ -157,11 +156,126 @@ int initglwt(const char* title, int width, int height, bool fullscreen)
 
 #endif //__APPLE__
 
+#ifdef _WIN32
+#include <windows.h>
+
+HCURSOR gPointerCursor;
+HWND gHwnd;
+bool gRunning = true;
+HGLRC openGLContext;
+HDC windowHandleDeviceContext;
+
+#pragma comment (lib, "opengl32.lib")
+
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	switch(message)
+	{
+	case WM_CREATE:
+		{
+			gHwnd = hWnd;
+
+			PIXELFORMATDESCRIPTOR pfd =
+			{
+				sizeof(PIXELFORMATDESCRIPTOR),
+				1,
+				PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER,    //Flags
+				PFD_TYPE_RGBA,            //The kind of framebuffer. RGBA or palette.
+				32,                        //Colordepth of the framebuffer.
+				0, 0, 0, 0, 0, 0,
+				0,
+				0,
+				0,
+				0, 0, 0, 0,
+				24,                        //Number of bits for the depthbuffer
+				8,                        //Number of bits for the stencilbuffer
+				0,                        //Number of Aux buffers in the framebuffer.
+				PFD_MAIN_PLANE,
+				0,
+				0, 0, 0
+			};
+
+			windowHandleDeviceContext = GetDC(hWnd);
+
+			int  pixelFormat;
+			pixelFormat = ChoosePixelFormat(windowHandleDeviceContext, &pfd); 
+			SetPixelFormat(windowHandleDeviceContext, pixelFormat, &pfd);
+
+			openGLContext = wglCreateContext(windowHandleDeviceContext);
+			wglMakeCurrent(windowHandleDeviceContext, openGLContext);
+
+			gl3wInit();
+			setup();
+		}
+		break;
+
+	case WM_MOUSEMOVE:
+		{
+			SetCursor(gPointerCursor);
+		}
+		break;
+
+	case WM_CLOSE:
+		wglDeleteContext(openGLContext);
+		gRunning = false;
+		break;
+
+	default:
+		return DefWindowProc(hWnd, message, wParam, lParam);
+	}
+	return 0;
+}
+
+int initglwt(const char* title, int width, int height, bool fullscreen)
+{
+	WNDCLASS wc = {0};
+	wc.lpfnWndProc   = WndProc;
+	wc.hInstance     = GetModuleHandle(NULL);
+	wc.hbrBackground = (HBRUSH)(COLOR_BACKGROUND);
+	wc.lpszClassName = "GLWT";
+	wc.style = CS_OWNDC;
+	if( !RegisterClass(&wc) )
+		return false;
+
+	CreateWindow(wc.lpszClassName, title, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_VISIBLE, 0, 0, width, height, 0, 0, wc.hInstance, 0);
+
+	LARGE_INTEGER currentTime;
+	MSG msg = {0};
+	QueryPerformanceCounter(&currentTime);
+	LONGLONG lastTime = currentTime.QuadPart;
+
+	while (gRunning)
+	{
+		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+			DispatchMessage(&msg);
+
+		if (gRunning)
+		{
+			//Query the elapsed frame time
+			QueryPerformanceCounter(&currentTime);
+			float dt = (currentTime.QuadPart - lastTime) / 1000000.0f;
+			lastTime = currentTime.QuadPart;
+
+			//Begin painting
+			PAINTSTRUCT ps;
+			BeginPaint(gHwnd, &ps);
+
+			//Render
+			draw(dt);
+
+			//Swap out buffers and finish painting
+			SwapBuffers(windowHandleDeviceContext);
+
+			EndPaint(gHwnd, &ps);
+		}
+	}
+}
+
+#endif //_WIN32
+
 //gl3w library follows
 
 #ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN 1
-#include <windows.h>
 
 static HMODULE libgl;
 

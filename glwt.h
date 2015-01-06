@@ -1,7 +1,7 @@
 //
 //  GLWT v2.0
 //  by Alex Parker
-//  A two file OpenGL 3.2+ Window Opener and Library Loader for OSX
+//  A two file OpenGL 3.2+ Window Opener and Library Loader for OSX/Win32
 //  Public Domain License
 //
 
@@ -9,7 +9,15 @@
 #ifndef __glwt__
 #define __glwt__
 
+#ifndef __cplusplus
+#ifdef _WIN32
+typedef int bool;
+#define false 0
+#define true 1
+#else
 #include <stdbool.h>
+#endif
+#endif
 
 #ifdef __cplusplus
 extern "C" {
