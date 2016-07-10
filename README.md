@@ -5,11 +5,11 @@ GLWT v2.0 now in a single file and easier to use. It opens a nice OSX/Win32 wind
 
     #include "glwt.h"
     
-    void setup()
+    void glwt_setup()
     {
     }
     
-    void draw(float time)
+    void glwt_draw(float time)
     {
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
