@@ -28,3 +28,5 @@ Compiling
 ---------
 
 Simply create a new empty XCode/Visual Studio project and add glwt.(cpp/mm) and glwt.h to the project.
+
+On Mac you will need to go to the 'Build Phases' XCode project settings tab and add the Cocoa.framework and OpenGL.framework for the project to link. Also ensure the glwt.mm file is an mm file *not* a cpp file.
