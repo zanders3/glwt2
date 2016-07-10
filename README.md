@@ -21,7 +21,7 @@ GLWT v2.0 now in a single file and easier to use. It opens a nice OSX/Win32 wind
     int main(int argc, char *argv[])
     #endif
     {
-        return initglwt("Hello, GLWT!", 800, 600, false);
+        return glwt_init("Hello, GLWT!", 800, 600, false);
     }
 
 Compiling
