@@ -30,3 +30,8 @@ Compiling
 Simply create a new empty XCode/Visual Studio project and add glwt.(cpp/mm) and glwt.h to the project.
 
 On Mac you will need to go to the 'Build Phases' XCode project settings tab and add the Cocoa.framework and OpenGL.framework for the project to link. Also ensure the glwt.mm file is an mm file *not* a cpp file.
+
+Input
+-----
+Pressed keys are stored in the global ```bool glwt_keydown[255];``` structure as ascii keycodes. e.g. ```glwt_keydown['a']```. This will work for a-z and 0-9 keys. There are additional keys defined in the Keys enum at the top of the header file. This currently only works on windows - I'll be adding Mac support later!
+
